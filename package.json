@@ -1,7 +1,7 @@
 {
-  "name": "skeleton-lib",
-  "version": "0.1.0",
-  "description": "Skeleton-lib",
+  "name": "@mousetool/mousexml",
+  "version": "1.0.0",
+  "description": "A simple XML (de)serializer",
   "main": "dummy.js",
   "onelua": {
     "main": "init.lua"
@@ -10,5 +10,11 @@
   "license": "MIT",
   "devDependencies": {
     "@mousetool/tfm-vscode": "^1.0.1"
+  },
+  "dependencies": {
+    "@mousetool/class": "^1.0.0",
+    "@mousetool/linkedlist": "^1.0.0",
+    "@mousetool/mousebase": "^1.0.2",
+    "@mousetool/ordered-table": "^1.0.1"
   }
 }
