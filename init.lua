@@ -1,101 +1,8 @@
-local LinkedList = require("@mousetool/linkedlist")
-
 --- A simple XML (de)serializer
 local mousexml = {}
 
---- @alias XmlAttrValue string|number|boolean
-
---- Represents a collection of XML child nodes
---- @class XmlChildren : LinkedList
---- @field push_back fun(self:XmlChildren, value:XmlNode)
---- @field push_front fun(self:XmlChildren, value:XmlNode)
---- @field insert_after fun(self:XmlChildren, position:number, value:XmlNode)
---- @field pop_back fun(self:XmlChildren):XmlNode
---- @field pop_front fun(self:XmlChildren):XmlNode
---- @field back fun(self:XmlChildren):XmlNode
---- @field front fun(self:XmlChildren):XmlNode
---- @field get fun(self:XmlChildren, position:number):XmlNode
---- @field to_list fun(self:XmlChildren):XmlNode[]
---- @field to_reverse_list fun(self:XmlChildren):XmlNode[]
-
---- Represents an XML Node
---- @class XmlNode:Class
---- @field new fun(self:XmlNode, name:string):XmlNode
---- @field name string|nil
---- @field parent XmlNode|nil
---- @field children XmlChildren
---- @field text string|nil
---- @field attributes table<string, XmlAttrValue>
---- @field isDoc boolean #Whether this is a top-level root XML node
-local XmlNode = require("@mousetool/class"):extend("XmlNode")
-do
-    XmlNode.isDoc = false
-
-    --- @param name? string
-    function XmlNode._init(self, name)
-        self.name = name
-        self.children = LinkedList.new()
-        self.attributes = {}
-    end
-
-    --- Adds and links a child node to this parent node. Equivalent to:
-    ---```lua
-    --- node.parent = parent
-    --- parent.children:push_back(node)
-    --- ```
-    --- @param node XmlNode The child node to add
-    function XmlNode.addChild(self, node)
-        node.parent = self
-        self.children:push_back(node)
-    end
-
-    --- Converts the node into an XML string representation
-    --- @return string
-    function XmlNode.toXmlString(self)
-        local attrs = {}
-        for k, v in pairs(self.attributes) do
-            attrs[#attrs+1] = k .. '="' .. v .. '"'
-        end
-        local inner_text, inner_text_sz = {}, 0
-        if self.text then
-            inner_text_sz = inner_text_sz + 1
-            inner_text[inner_text_sz] = self.text
-        end
-        if self.children.size > 0 then
-            local c = self.children:to_list()
-            for i = 1, self.children.size do
-                inner_text_sz = inner_text_sz + 1
-                inner_text[inner_text_sz] = c[i]:toXmlString()
-            end
-        end
-        return
-            ("<%s%s"):format(self.name, #attrs > 0 and " " .. table.concat(attrs, " ") or "") ..
-            (
-                inner_text_sz > 0 and
-                (">%s</%s>"):format(table.concat(inner_text, nil, nil, inner_text_sz), self.name) or
-                " />"  -- Self-closing
-            )
-    end
-end
-
---- Represents an XML Document.
---- A document is assumed to be an anonymous top-level root XML Node, with no name, attributes or parent.
---- @class XmlDoc:XmlNode
---- @field new fun(self:XmlNode):XmlDoc
-local XmlDoc = XmlNode:extend("XmlDoc")
-do
-    XmlDoc.isDoc = true
-
-    --- Exports the document to an XML string representation
-    --- @return string
-    function XmlDoc.toXmlString(self)
-        -- An XML document should only have one child
-        if self.children.size > 0 then
-            return self.children:front():toXmlString()
-        end
-        return ""
-    end
-end
+local XmlNode = require("XmlNode")
+local XmlDoc = require("XmlDoc")
 
 --- Parses an XML string
 --- @param xml string
@@ -112,7 +19,7 @@ function mousexml.parse(xml)
             if leaf == "/" then return nil end  -- </Name/> doesn't make sense
             if name ~= curr_node.name then return nil end  -- <a></b> doesn't make sense
             if attrib ~= "" then return nil end  -- </Name a="b"> doesn't make sense
-            
+
             curr_node = curr_node.parent  -- go up one level
         else
             -- Make a new node
@@ -124,7 +31,7 @@ function mousexml.parse(xml)
             end
 
             curr_node:addChild(node)
-            
+
             if leaf == "" then
                 -- Not a self-closing tag
                 curr_node = node
@@ -140,5 +47,8 @@ function mousexml.parse(xml)
     if curr_node ~= document then return nil end
     return document
 end
+
+mousexml.XmlNode = XmlNode
+mousexml.XmlDoc = XmlDoc
 
 return mousexml
