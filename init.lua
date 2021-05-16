@@ -24,6 +24,7 @@ local mousexml = {}
 --- @field name string|nil
 --- @field parent XmlNode|nil
 --- @field children XmlChildren
+--- @field text string|nil
 --- @field attributes table<string, XmlAttrValue>
 --- @field isDoc boolean #Whether this is a top-level root XML node
 local XmlNode = require("@mousetool/class"):extend("XmlNode")
@@ -53,20 +54,27 @@ do
     function XmlNode.toXmlString(self)
         local attrs = {}
         for k, v in pairs(self.attributes) do
-            attrs[#attrs+1] = k..'="'..v..'"'
+            attrs[#attrs+1] = k .. '="' .. v .. '"'
         end
-        local str = ("<%s%s"):format(self.name, #attrs > 0 and " " .. table.concat(attrs, " ") .. " " or "")
+        local inner_text, inner_text_sz = {}, 0
+        if self.text then
+            inner_text_sz = inner_text_sz + 1
+            inner_text[inner_text_sz] = self.text
+        end
         if self.children.size > 0 then
-            local cstr = {}
             local c = self.children:to_list()
             for i = 1, self.children.size do
-                cstr[i] = c[i]:toXmlString()
+                inner_text_sz = inner_text_sz + 1
+                inner_text[inner_text_sz] = c[i]:toXmlString()
             end
-            str = str .. (">%s</%s>"):format(table.concat(cstr), self.name)
-        else
-            str = str .. "/>"
         end
-        return str
+        return
+            ("<%s%s"):format(self.name, #attrs > 0 and " " .. table.concat(attrs, " ") or "") ..
+            (
+                inner_text_sz > 0 and
+                (">%s</%s>"):format(table.concat(inner_text, nil, nil, inner_text_sz), self.name) or
+                " />"  -- Self-closing
+            )
     end
 end
 
@@ -98,7 +106,7 @@ function mousexml.parse(xml)
 
     -- Parse nodes. will fail if attributes contain >, use a more robust parser to handle
     --- @type string
-    for closing, name, attrib, leaf in xml:gmatch("<(/?)([%w_]+)(.-)(/?)>") do
+    for closing, name, attrib, leaf, text in xml:gmatch("<(/?)([%w_]+)(.-)(/?)>%s*([^<]*)%s*") do
         if closing == "/" then
             if curr_node == nil or curr_node == document then return nil end
             if leaf == "/" then return nil end  -- </Name/> doesn't make sense
@@ -121,6 +129,12 @@ function mousexml.parse(xml)
                 -- Not a self-closing tag
                 curr_node = node
             end
+        end
+
+        if text ~= "" then
+            -- Link the text to the current node. If a text is already linked, append this one with a space.
+            local curr_text = curr_node.text
+            curr_node.text = (curr_text and curr_text .. " " or "") .. text
         end
     end
     if curr_node ~= document then return nil end

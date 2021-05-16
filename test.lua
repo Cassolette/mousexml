@@ -27,8 +27,15 @@ local tests = {
     function ()
         local xml = [[<C><P MEDATA=";2,1;;;-0;0::0:1-"/><Z><S><S T="0" X="400" Y="380" L="800" H="40" P="0,0,0.3,0.2,0,0,0,0"/><S T="1" X="309" Y="322" L="69" H="69" P="0,0,0.1,0.2,0,0,0,0"/><S T="1" X="471" Y="322" L="69" H="69" P="0,0,0.1,0.2,0,0,0,0"/></S><D><T X="90" Y="358"/><F X="89" Y="351"/><DS X="430" Y="336"/></D><O><O X="390" Y="349" C="705" P="0"/></O><L><JD M1="1" M2="2"/></L></Z></C>]]
         local xmlobj = mousexml.parse(xml)
-        print(xmlobj:toXmlString())
         assert(xmlobj ~= nil)
+        print(xmlobj:toXmlString())
+    end,
+    function ()
+        local xml = [[<C><P MEDATA=";2,1;;;-0;0::0:1-">TEXT<P />JOIN</P><Z><S><S T="0" X="400" Y="380" L="800" H="40" P="0,0,0.3,0.2,0,0,0,0"/><S T="1" X="309" Y="322" L="69" H="69" P="0,0,0.1,0.2,0,0,0,0"/><S T="1" X="471" Y="322" L="69" H="69" P="0,0,0.1,0.2,0,0,0,0"/></S><D><T X="90" Y="358"/><F X="89" Y="351"/><DS X="430" Y="336"/></D><O><O X="390" Y="349" C="705" P="0"/></O><L><JD M1="1" M2="2"/></L></Z></C>]]
+        local xmlobj = mousexml.parse(xml)
+        assert(xmlobj ~= nil)
+        assert(xmlobj:toXmlString():find([[<C><P MEDATA=";2,1;;;-0;0::0:1-">TEXT JOIN<P /></P>]], 1, true))
+        print(xmlobj:toXmlString())
     end,
 }
 

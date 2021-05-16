@@ -1,6 +1,6 @@
 {
   "name": "@mousetool/mousexml",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A simple XML (de)serializer",
   "main": "dummy.js",
   "onelua": {
