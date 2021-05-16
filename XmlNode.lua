@@ -17,6 +17,7 @@ local LinkedList = require("@mousetool/linkedlist")
 
 --- Represents an XML Node
 --- @class XmlNode:Class
+--- @overload fun(name:string):XmlNode
 --- @field new fun(self:XmlNode, name:string):XmlNode
 --- @field name string|nil
 --- @field parent XmlNode|nil
@@ -33,6 +34,11 @@ do
         self.name = name
         self.children = LinkedList.new()
         self.attributes = {}
+
+        -- When this object is invoked via call, direct it to findChild()
+        getmetatable(self).__call = function(self, name)
+            return self:findChild(name)
+        end
     end
 
     --- Adds and links a child node to this parent node. Equivalent to:
@@ -44,6 +50,43 @@ do
     function XmlNode.addChild(self, node)
         node.parent = self
         self.children:push_back(node)
+    end
+
+    --- Finds child nodes with the matching name
+    --- @param name string
+    --- @return XmlNode[]
+    function XmlNode.findChildren(self, name)
+        local result = {}  --- @type XmlNode[]
+        local result_sz = 0
+
+        for i,
+                child  --- @type XmlNode
+                in self.children:ipairs() do
+            if child.name == name then
+                result_sz = result_sz + 1
+                result[result_sz] = child
+            end
+        end
+
+        return result
+    end
+
+    --- Finds child node(s) with the matching name. Similar to `findChildren`, but returns:
+    ---  - `XmlNode` when only a single child exists
+    ---  - `nil` when no children exists
+    ---  - `XmlNode[]` when multiple children exists
+    --- @see XmlNode.findChildren
+    --- @param name string
+    --- @return XmlNode|XmlNode[]|nil
+    function XmlNode.findChild(self, name)
+        local children = self:findChildren(name)
+        local children_count = #children
+        if children_count > 1 then
+            return children
+        elseif children_count == 1 then
+            return children[1]
+        end
+        return nil
     end
 
     --- Converts the node into an XML string representation

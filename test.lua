@@ -1,4 +1,4 @@
-package.path = package.path .. ";node_modules/?/init.lua;node_modules/?/?.lua"
+if not tfm then package.path = package.path .. ";node_modules/?/init.lua;node_modules/?/?.lua" end
 local mousexml = require "init"
 
 dumptbl = function(tbl, indent, cb)
@@ -35,6 +35,32 @@ local tests = {
         local xmlobj = mousexml.parse(xml)
         assert(xmlobj ~= nil)
         assert(xmlobj:toXmlString():find([[<C><P MEDATA=";2,1;;;-0;0::0:1-">TEXT JOIN<P /></P>]], 1, true))
+        print(xmlobj:toXmlString())
+    end,
+    function ()
+        local xml = [[
+<C>
+	<P/>
+	<Z>
+		<S>
+			<S T="0"/>
+			<S T="1"/>
+            <S T="3"/>
+        </S>
+		<D/>
+		<O/>
+		<L/>
+	</Z>
+</C>
+        ]]
+        local xmlobj = mousexml.parse(xml)
+        assert(xmlobj ~= nil)
+        assert(#xmlobj:findChildren("C") == 1)
+        assert(xmlobj:findChildren("C")[1]
+                :findChildren("Z")[1]
+                :findChildren("S")[1]
+                :findChildren("S")[2].attributes.T == "1")
+        assert(xmlobj("C")("Z")("S")("S")[3].attributes.T == "3")
         print(xmlobj:toXmlString())
     end,
 }

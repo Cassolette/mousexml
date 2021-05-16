@@ -1,19 +1,23 @@
 {
   "name": "@mousetool/mousexml",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A simple XML (de)serializer",
   "main": "dummy.js",
+  "scripts": {
+    "buildtest": "onelua test.lua --out test-compiled.lua --no-minify --prepend-meta"
+  },
   "onelua": {
     "main": "init.lua"
   },
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@mousetool/onelua": "^1.1.0",
     "@mousetool/tfm-vscode": "^1.0.1"
   },
   "dependencies": {
     "@mousetool/class": "^1.0.0",
-    "@mousetool/linkedlist": "^1.0.0",
+    "@mousetool/linkedlist": "^1.0.1",
     "@mousetool/mousebase": "^1.0.2",
     "@mousetool/ordered-table": "^1.0.1"
   }
