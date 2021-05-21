@@ -17,7 +17,6 @@ local LinkedList = require("@mousetool/linkedlist")
 
 --- Represents an XML Node
 --- @class XmlNode:Class
---- @overload fun(name:string):XmlNode
 --- @field new fun(self:XmlNode, name:string):XmlNode
 --- @field name string|nil
 --- @field parent XmlNode|nil
